@@ -24,7 +24,7 @@ runs/<run_id>/
 
 ```text
 cutclaw_original
-cutmaster_embedding_v4
+cutmaster_embedding_v4_full
 cutmaster_local_embedding
 baseline_random
 ```
@@ -34,6 +34,8 @@ Use stable names for comparison runs. Add a date only when the same method/confi
 ## Per-Task `run_output.json`
 
 `task_outputs/<task_id>/run_output.json` is the canonical per-task record and must follow `schemas/run_output.schema.json`.
+
+Task ids use the canonical format `task_<index>`, for example `task_001`.
 
 Required fields:
 
@@ -62,15 +64,15 @@ Example:
 
 ```json
 {
-  "run_id": "cutmaster_embedding_v4",
+  "run_id": "cutmaster_embedding_v4_full",
   "method": "CutMaster",
   "method_version": "embedding_v4",
-  "task_id": "mb_fifa_world_cup_group_a_mexico_vs_south_africa_event",
+  "task_id": "task_001",
   "video_id": "video_001",
-  "audio_id": "bgm_sports_highlights",
+  "audio_id": "audio_001",
   "prompt_type": "event",
   "status": "success",
-  "output_video": "runs/cutmaster_embedding_v4/task_outputs/mb_fifa_world_cup_group_a_mexico_vs_south_africa_event/output.mp4",
+  "output_video": "runs/cutmaster_embedding_v4_full/task_outputs/task_001/output.mp4",
   "target_output_length_sec": 60,
   "target_shot_length_sec": 4.0,
   "actual_output_length_sec": 58.7,
@@ -84,8 +86,8 @@ Example:
     "llm_model": "qwen-max"
   },
   "artifacts": {
-    "shot_plan": "runs/cutmaster_embedding_v4/task_outputs/mb_fifa_world_cup_group_a_mexico_vs_south_africa_event/artifacts/shot_plan.json",
-    "backend_log": "runs/cutmaster_embedding_v4/task_outputs/mb_fifa_world_cup_group_a_mexico_vs_south_africa_event/logs/backend.log"
+    "shot_plan": "runs/cutmaster_embedding_v4_full/task_outputs/task_001/artifacts/shot_plan.json",
+    "backend_log": "runs/cutmaster_embedding_v4_full/task_outputs/task_001/logs/backend.log"
   },
   "error": null
 }
@@ -110,7 +112,7 @@ Example:
 
 ```json
 {
-  "run_id": "cutmaster_embedding_v4",
+  "run_id": "cutmaster_embedding_v4_full",
   "method": "CutMaster",
   "method_version": "embedding_v4",
   "benchmark": "Mashup-Benchmark",
@@ -120,7 +122,7 @@ Example:
   "num_tasks": 40,
   "num_success": 40,
   "num_failed": 0,
-  "run_outputs": "runs/cutmaster_embedding_v4/run_outputs.jsonl",
+  "run_outputs": "runs/cutmaster_embedding_v4_full/run_outputs.jsonl",
   "code": {
     "repo": "CutClaw",
     "branch": "CutMaster",

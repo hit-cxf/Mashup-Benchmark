@@ -13,7 +13,9 @@
   ],
   "properties": {
     "id": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^task_[0-9]{3}$",
+      "description": "Canonical task id: task_<index>, e.g. task_001."
     },
     "benchmark": {
       "const": "Mashup-Benchmark"
@@ -107,7 +109,9 @@
       ],
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^audio_[0-9]{3}$",
+          "description": "Canonical audio id: audio_<index>, e.g. audio_001."
         },
         "title": {
           "type": "string"

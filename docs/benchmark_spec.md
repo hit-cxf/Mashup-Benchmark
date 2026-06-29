@@ -5,10 +5,10 @@
 One benchmark item is a tuple:
 
 ```text
-(source_video, user_prompt, bgm_track, target_output_length, target_shot_length)
+(source_video, user_prompt, audio_track, target_output_length, target_shot_length)
 ```
 
-The system output is one complete short video for that item.
+The system output is one complete short video for that item. Canonical task ids follow `task_<index>`, from `task_001` to `task_040`.
 
 ## Task Types
 
