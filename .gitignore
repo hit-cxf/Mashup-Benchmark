@@ -1,0 +1,19 @@
+# Large benchmark media assets
+data/audios/
+data/videos/
+
+# Generated outputs and evaluations
+runs/*
+!runs/README.md
+!runs/.gitkeep
+outputs/*
+!outputs/.gitkeep
+evaluations/*
+!evaluations/.gitkeep
+reports/*
+!reports/.gitkeep
+
+# macOS / Python noise
+.DS_Store
+__pycache__/
+*.py[cod]

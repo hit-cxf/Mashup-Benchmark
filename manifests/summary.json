@@ -1,0 +1,39 @@
+{
+  "benchmark": "Mashup-Benchmark",
+  "task_count": 40,
+  "video_count": 10,
+  "audio_count": 11,
+  "video_categories": {
+    "sports": 3,
+    "documentary": 3,
+    "film": 4
+  },
+  "task_types": {
+    "event": 10,
+    "character": 10,
+    "emotion": 10,
+    "narrative": 10
+  },
+  "target_output_length_sec_values": [
+    60
+  ],
+  "target_shot_length_sec_values": [
+    4.0
+  ],
+  "primary_task_file": "data/tasks/mashup_benchmark.jsonl",
+  "asset_dirs": {
+    "videos": "data/videos/",
+    "audios": "data/audios/"
+  },
+  "manifest_files": {
+    "videos": "manifests/videos.json",
+    "audios": "manifests/audios.json",
+    "tasks": "manifests/tasks.jsonl"
+  },
+  "output_dirs": {
+    "system_outputs": "outputs/",
+    "run_logs": "runs/",
+    "evaluation_results": "evaluations/",
+    "reports": "reports/"
+  }
+}

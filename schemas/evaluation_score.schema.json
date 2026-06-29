@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Mashup-Benchmark evaluation score record",
+  "type": "object",
+  "required": [
+    "eval_id",
+    "run_id",
+    "task_id",
+    "scores"
+  ],
+  "properties": {
+    "eval_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "judge": {
+      "type": "object"
+    },
+    "scores": {
+      "type": "object",
+      "properties": {
+        "IF": {
+          "type": "number"
+        },
+        "BCS": {
+          "type": "number"
+        },
+        "AEC": {
+          "type": "number"
+        },
+        "VQ": {
+          "type": "number"
+        },
+        "TC": {
+          "type": "number"
+        },
+        "NC": {
+          "type": "number"
+        },
+        "OQ": {
+          "type": "number"
+        },
+        "Quality": {
+          "type": "number"
+        }
+      }
+    },
+    "cost": {
+      "type": "object"
+    },
+    "rationale": {
+      "type": "string"
+    }
+  }
+}

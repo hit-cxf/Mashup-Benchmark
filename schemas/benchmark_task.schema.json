@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Mashup-Benchmark task row",
+  "type": "object",
+  "required": [
+    "id",
+    "benchmark",
+    "video",
+    "task",
+    "audio",
+    "expected_output",
+    "evaluation_focus"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "benchmark": {
+      "const": "Mashup-Benchmark"
+    },
+    "video": {
+      "type": "object",
+      "required": [
+        "id",
+        "category",
+        "normalized_name",
+        "title_en",
+        "title_zh",
+        "local_path",
+        "duration_level"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "category": {
+          "enum": [
+            "sports",
+            "documentary",
+            "film"
+          ]
+        },
+        "normalized_name": {
+          "type": "string"
+        },
+        "title_en": {
+          "type": "string"
+        },
+        "title_zh": {
+          "type": "string"
+        },
+        "local_path": {
+          "type": "string"
+        },
+        "duration_level": {
+          "type": "string"
+        }
+      }
+    },
+    "task": {
+      "type": "object",
+      "required": [
+        "type",
+        "type_zh",
+        "prompt",
+        "target_output_length_sec",
+        "target_shot_length_sec",
+        "task_index_within_video"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "event",
+            "character",
+            "emotion",
+            "narrative"
+          ]
+        },
+        "type_zh": {
+          "type": "string"
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "target_output_length_sec": {
+          "type": "number",
+          "minimum": 1
+        },
+        "target_shot_length_sec": {
+          "type": "number",
+          "minimum": 1
+        },
+        "task_index_within_video": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "audio": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "source",
+        "local_path",
+        "mood_tags"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "artist": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "source_url": {
+          "type": "string"
+        },
+        "asset_url": {
+          "type": "string"
+        },
+        "license_url": {
+          "type": "string"
+        },
+        "local_path": {
+          "type": "string"
+        },
+        "duration": {
+          "type": "string"
+        },
+        "mood_tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "expected_output": {
+      "type": "object",
+      "required": [
+        "format",
+        "orientation",
+        "language",
+        "allow_subtitles"
+      ],
+      "properties": {
+        "format": {
+          "const": "short_video"
+        },
+        "orientation": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "allow_subtitles": {
+          "type": "boolean"
+        }
+      }
+    },
+    "evaluation_focus": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
