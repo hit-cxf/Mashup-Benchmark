@@ -33,15 +33,15 @@ Score the following metrics from 0 to 100:
 - NC: Narrative Coherence. Does the edit appear to have a clear structure, progression, or story arc matching the prompt?
 
 Return a JSON object exactly like:
-{
-  "scores": {"IF": 0, "VQ": 0, "TC": 0, "NC": 0},
-  "rationale": {
+{{
+  "scores": {{"IF": 0, "VQ": 0, "TC": 0, "NC": 0}},
+  "rationale": {{
     "IF": "short reason",
     "VQ": "short reason",
     "TC": "short reason",
     "NC": "short reason"
-  }
-}
+  }}
+}}
 """.strip()
 
 
