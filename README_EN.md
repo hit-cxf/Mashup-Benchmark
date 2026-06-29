@@ -4,8 +4,6 @@
 
 Mashup-Benchmark is a long-video automatic editing benchmark for evaluating short-form mashup, highlight, and music-driven video editing systems.
 
-This repository uses the Chinese README as the default entry point. When the benchmark structure, data protocol, evaluation metrics, or usage workflow changes, update both `README.md` and `README_EN.md` so the Chinese and English versions stay aligned with each other and with the current project implementation. Figures, diagrams, and paper-style illustrations can use English labels only.
-
 ![Mashup-Benchmark Overview](docs/assets/mashup_benchmark_overview.png)
 
 ## Dataset
@@ -16,7 +14,38 @@ This repository uses the Chinese README as the default entry point. When the ben
 - Default target output length: 60 seconds.
 - Default target shot length: 4 seconds.
 
-The canonical task file is `data/tasks/mashup_benchmark.jsonl`. Each line is one video-prompt-audio task.
+The canonical task file is `data/tasks/mashup_benchmark.jsonl`. Each line is one video-prompt-audio task. Task ids follow `task_<index>`, from `task_001` to `task_040`.
+
+### Videos
+
+| ID | Category | Title | Duration | Resolution |
+|---|---|---|---:|---|
+| `video_001` | sports | FIFA World Cup Group A: Mexico vs South Africa<br>美加墨世界杯A组第1轮：墨西哥VS南非 | 01:38:53 | 480x270 |
+| `video_002` | sports | FIFA World Cup Group H: Spain vs Cape Verde<br>美加墨世界杯H组第1轮：西班牙VS佛得角 | 02:03:58 | 1920x1080 |
+| `video_003` | sports | FIFA World Cup Group E: Germany vs Curacao<br>美加墨世界杯E组第1轮：德国VS库拉索 | 02:09:00 | 1920x1080 |
+| `video_004` | documentary | Planet Earth S01E01: From Pole to Pole<br>地球脉动 第一季第一集：From Pole to Pole | 49:02 | 1920x1080 |
+| `video_005` | documentary | Planet Earth S01E02: Mountains<br>地球脉动 第一季第二集：Mountains | 47:52 | 1920x1080 |
+| `video_006` | documentary | Planet Earth S01E03: Fresh Water<br>地球脉动 第一季第三集：Fresh Water | 49:11 | 1920x1080 |
+| `video_007` | film | The Godfather (1972)<br>教父1 | 02:57:09 | 1920x1080 |
+| `video_008` | film | Spirited Away (2001)<br>千与千寻 | 02:04:32 | 1920x1038 |
+| `video_009` | film | La La Land (2016)<br>爱乐之城 | 02:07:48 | 1920x754 |
+| `video_010` | film | Interstellar (2014)<br>星际穿越 | 02:49:04 | 1920x1080 |
+
+### Audios
+
+| ID | Title | Artist | Duration | Mood Tags |
+|---|---|---|---:|---|
+| `audio_001` | Sports Highlights | Ahjay Stelino | 01:36 | sports, rock, aggressive, propulsive |
+| `audio_002` | Dirty Thinkin' | Michael Ramir C. | 01:29 | funk, energetic, groove, playful |
+| `audio_003` | Techno Fest Vibes | Alejandro Magana (A. M.) | 01:09 | edm, high_energy, driving, celebratory |
+| `audio_004` | Fright Night | Michael Ramir C. | 01:41 | cinematic, tension, dark, suspense |
+| `audio_005` | Sun and His Daughter | Eugenio Mininni | 02:48 | nature, poetic, world, expansive |
+| `audio_006` | Discover | Eugenio Mininni | 02:24 | documentary, hopeful, orchestral, wonder |
+| `audio_007` | Relax Beat | Arulo | 01:48 | ambient, calm, observational, soft |
+| `audio_008` | Silent Descent | Eugenio Mininni | 02:40 | film_score, melancholic, reflective, dramatic |
+| `audio_009` | Epical Drums 01 | Grigoriy Nuzhny | 01:46 | cinematic, drums, epic, action |
+| `audio_010` | Romantic Getaway | Ahjay Stelino | 01:44 | romantic, warm, emotional, classical |
+| `audio_011` | Romantic Vacation | Ahjay Stelino | 01:52 | jazz, romantic, lounge, stylish |
 
 ## Directory Layout
 
@@ -96,11 +125,3 @@ python3 -m eval.run_evaluation --run runs/<run_id> --config eval/config.yaml
 ```
 
 `eval/config.yaml` configures the VLM model name, API key, base URL, timeout, and metric weights. This file contains local credentials and is ignored by Git; do not commit it.
-
-## Maintenance Policy
-
-- `README.md` is the default Chinese entry point; `README_EN.md` is the mirrored English version.
-- When editing the README, update both files and keep their meanings aligned.
-- When changing data, schemas, evaluation code, or directory structure, update the README, relevant files under `docs/`, and examples accordingly.
-- `data/videos/` and `data/audios/` store large media assets and are ignored by Git by default.
-- `runs/` stores generated videos from different baselines or tested systems; formal results should include `run_manifest.json` and per-task `run_output.json` files.
