@@ -1,0 +1,15 @@
+Mashup-Benchmark Notice
+
+This repository includes benchmark metadata, task definitions, prompts,
+schemas, evaluation code, documentation, and example run metadata.
+
+The repository does not redistribute source videos or audio assets. Users
+must obtain all source media from lawful sources and comply with the
+original copyright, license, and terms of use for each media asset.
+
+Generated videos may contain third-party copyrighted media and are not
+covered by this repository's code or data licenses.
+
+Mixkit music metadata is included for benchmark reproducibility. The
+audio files themselves are not redistributed by this repository and remain
+subject to the Mixkit license and terms.
