@@ -1,42 +1,85 @@
 # Evaluation Metrics
 
+The evaluator supports seven quality metrics: two local automatic metrics, four VLM-as-judge metrics, and one optional human metric. All component scores are normalized to `[0, 100]`.
+
 ## Quality Score
 
 ```text
-Quality = 0.18*IF + 0.16*BCS + 0.14*AEC + 0.14*VQ + 0.14*TC + 0.14*NC + 0.10*OQ
+Quality = weighted_mean(IF, BCS, AEC, VQ, TC, NC, OQ)
 ```
 
-All component scores should be normalized to `[0, 100]` before aggregation.
+Default seven-metric weights:
 
-## Metrics
+```text
+BCS = 0.20  # local automatic
+AEC = 0.20  # local automatic
+IF  = 0.10  # VLM-as-judge
+VQ  = 0.10  # VLM-as-judge
+TC  = 0.10  # VLM-as-judge
+NC  = 0.10  # VLM-as-judge
+OQ  = 0.20  # human evaluation
+```
+
+If `OQ` is unavailable, the evaluator renormalizes over the six available metrics:
+
+```text
+BCS = 0.25
+AEC = 0.25
+IF  = 0.125
+VQ  = 0.125
+TC  = 0.125
+NC  = 0.125
+```
+
+The implementation also renormalizes automatically for any other missing metric, which keeps smoke tests and partial evaluations comparable within the metrics they actually compute.
+
+## Cross-Modal Alignment
 
 ### IF: Instruction Following
 
-Checks whether the output follows the prompt's requested subject, event, emotion, style, and narrative intent. Recommended implementation: VLM-as-judge with the prompt and generated video.
+Checks whether the output follows the prompt's requested subject, event, emotion, style, and narrative intent.
+
+Implementation: VLM-as-judge. The evaluator samples frames from the generated video and asks the configured VLM to score consistency with the task prompt.
 
 ### BCS: Beat-Cut Synchronization
 
-Measures whether visual cuts align with beats, downbeats, or music structure points. Compute distance from each cut to the nearest beat/downbeat and average with exponential decay.
+Measures whether visual cuts align with music beats or energy peaks.
+
+Implementation: the evaluator samples frames, detects visual discontinuity peaks as cuts, extracts audio RMS peaks as beats, computes each cut's distance to the nearest beat, and averages `exp(-distance / tau)`.
 
 ### AEC: Audio-Visual Energy Correspondence
 
-Measures whether visual motion intensity follows audio energy. Compute shot-level or window-level visual motion, compare to RMS/energy curve, and report correlation.
+Measures whether visual motion intensity follows audio energy.
+
+Implementation: the evaluator computes frame-difference motion energy and audio RMS energy, then maps their Pearson correlation from `[-1, 1]` to `[0, 100]`.
+
+## Single-Modal Quality
 
 ### VQ: Visual Quality
 
-Scores clarity, composition, subject prominence, and absence of obvious technical defects. Recommended implementation: VLM-as-judge or human Likert scoring.
+Scores clarity, composition, subject prominence, and absence of obvious technical defects.
+
+Implementation: VLM-as-judge over sampled frames.
 
 ### TC: Transition Continuity
 
 Scores whether neighboring clips connect naturally in semantics, movement, and composition.
 
+Implementation: VLM-as-judge over an ordered frame sequence.
+
 ### NC: Narrative Coherence
 
 Scores whether the complete edit has a coherent structure, emotional progression, or story arc.
 
+Implementation: VLM-as-judge using sampled frames plus task metadata.
+
+## Human Preference
+
 ### OQ: Overall Quality
 
-Human-facing holistic quality: whether the video feels watchable, natural, professional, and publishable.
+Scores whether a viewer considers the final video good, natural, professional, and publishable.
+
+Implementation: optional human rating. If a run record provides `human_scores.OQ` or `scores.OQ`, the evaluator includes it in `Quality`; otherwise the score is computed from the available automatic and VLM metrics only.
 
 ## Efficiency
 

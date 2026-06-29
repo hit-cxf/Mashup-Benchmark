@@ -8,8 +8,8 @@ runs/*
 !runs/.gitkeep
 outputs/*
 !outputs/.gitkeep
-evaluations/*
-!evaluations/.gitkeep
+eval_results/*
+!eval_results/.gitkeep
 reports/*
 !reports/.gitkeep
 
@@ -17,3 +17,7 @@ reports/*
 .DS_Store
 __pycache__/
 *.py[cod]
+
+# Local evaluator secrets
+eval/config.yaml
+eval/*.local.yaml

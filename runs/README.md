@@ -9,7 +9,7 @@ runs/<run_id>/
   run_manifest.json
   run_outputs.jsonl
   task_outputs/<task_id>/output.mp4
-  task_outputs/<task_id>/run.json
+  task_outputs/<task_id>/run_output.json
 ```
 
 See `../docs/run_submission_format.md` and the schemas in `../schemas/`.

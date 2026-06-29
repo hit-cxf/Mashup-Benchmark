@@ -64,7 +64,7 @@
     },
     "run_outputs": {
       "type": "string",
-      "description": "Path to run_outputs.jsonl relative to benchmark root."
+      "description": "Path to run_outputs.jsonl, a JSONL collection of run_output records, relative to benchmark root."
     },
     "code": {
       "type": "object",

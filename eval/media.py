@@ -1,0 +1,196 @@
+from __future__ import annotations
+
+import array
+import json
+import math
+import subprocess
+from pathlib import Path
+
+
+def run_cmd(cmd: list[str], *, input_bytes: bytes | None = None, timeout: int | None = None) -> bytes:
+    proc = subprocess.run(
+        cmd,
+        input=input_bytes,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=timeout,
+        check=False,
+    )
+    if proc.returncode != 0:
+        stderr = proc.stderr.decode("utf-8", errors="replace")[-2000:]
+        raise RuntimeError(f"command failed ({proc.returncode}): {' '.join(cmd)}\n{stderr}")
+    return proc.stdout
+
+
+def ffprobe_duration(path: Path) -> float:
+    out = run_cmd([
+        "ffprobe", "-v", "error", "-show_entries", "format=duration",
+        "-of", "default=noprint_wrappers=1:nokey=1", str(path),
+    ])
+    return float(out.decode("utf-8").strip())
+
+
+def has_audio_stream(path: Path) -> bool:
+    out = run_cmd([
+        "ffprobe", "-v", "error", "-select_streams", "a:0",
+        "-show_entries", "stream=index", "-of", "json", str(path),
+    ])
+    info = json.loads(out.decode("utf-8") or "{}")
+    return bool(info.get("streams"))
+
+
+def audio_rms_series(path: Path, *, sample_rate: int = 16000, window_sec: float = 0.5) -> list[float]:
+    if not has_audio_stream(path):
+        return []
+    raw = run_cmd([
+        "ffmpeg", "-v", "error", "-i", str(path), "-vn", "-ac", "1", "-ar", str(sample_rate),
+        "-f", "s16le", "-",
+    ])
+    samples = array.array("h")
+    samples.frombytes(raw)
+    if not samples:
+        return []
+    window = max(1, int(sample_rate * window_sec))
+    values: list[float] = []
+    for start in range(0, len(samples), window):
+        chunk = samples[start:start + window]
+        if not chunk:
+            continue
+        energy = math.sqrt(sum((s / 32768.0) ** 2 for s in chunk) / len(chunk))
+        values.append(energy)
+    return values
+
+
+def _read_ppm_frames(blob: bytes):
+    idx = 0
+    n = len(blob)
+    while idx < n:
+        if not blob.startswith(b"P6", idx):
+            break
+        idx += 2
+        if idx < n and blob[idx] in b"\r\n":
+            idx += 1
+            if idx < n and blob[idx - 1] == 13 and blob[idx] == 10:
+                idx += 1
+
+        tokens: list[bytes] = []
+        while len(tokens) < 3 and idx < n:
+            while idx < n and blob[idx] in b" \t\r\n":
+                idx += 1
+            if idx < n and blob[idx] == ord("#"):
+                while idx < n and blob[idx] not in b"\r\n":
+                    idx += 1
+                continue
+            start = idx
+            while idx < n and blob[idx] not in b" \t\r\n":
+                idx += 1
+            tokens.append(blob[start:idx])
+        if len(tokens) < 3:
+            break
+        width, height, maxval = map(int, tokens)
+        if maxval != 255:
+            raise ValueError("only 8-bit PPM frames are supported")
+        while idx < n and blob[idx] in b" \t\r\n":
+            idx += 1
+        size = width * height * 3
+        frame = blob[idx:idx + size]
+        if len(frame) < size:
+            break
+        yield frame
+        idx += size
+
+
+def video_motion_series(path: Path, *, fps: float = 2.0, width: int = 320) -> list[float]:
+    # PPM keeps parsing dependency-free while ffmpeg handles decoding/scaling.
+    vf = f"fps={fps},scale={width}:-2"
+    blob = run_cmd([
+        "ffmpeg", "-v", "error", "-i", str(path), "-vf", vf,
+        "-an", "-f", "image2pipe", "-vcodec", "ppm", "-",
+    ])
+    prev: bytes | None = None
+    values: list[float] = []
+    for frame in _read_ppm_frames(blob):
+        if prev is not None:
+            step = max(1, len(frame) // 50000)
+            diff = sum(abs(frame[i] - prev[i]) for i in range(0, min(len(frame), len(prev)), step))
+            count = max(1, len(range(0, min(len(frame), len(prev)), step)))
+            values.append(diff / (count * 255.0))
+        prev = frame
+    return values
+
+
+def detect_visual_cuts(path: Path, *, fps: float = 2.0) -> list[float]:
+    motion = video_motion_series(path, fps=fps)
+    if len(motion) < 3:
+        return []
+    mean = sum(motion) / len(motion)
+    std = math.sqrt(sum((v - mean) ** 2 for v in motion) / len(motion))
+    threshold = mean + 1.5 * std
+    min_gap = max(1, int(1.0 * fps))
+    cuts: list[float] = []
+    last_idx = -min_gap
+    for i in range(1, len(motion) - 1):
+        if i - last_idx < min_gap:
+            continue
+        if motion[i] >= threshold and motion[i] >= motion[i - 1] and motion[i] >= motion[i + 1]:
+            cuts.append((i + 1) / fps)
+            last_idx = i
+    return cuts
+
+
+def detect_audio_beats(path: Path, *, window_sec: float = 0.05) -> list[float]:
+    rms = audio_rms_series(path, window_sec=window_sec)
+    if len(rms) < 3:
+        return []
+    mean = sum(rms) / len(rms)
+    std = math.sqrt(sum((v - mean) ** 2 for v in rms) / len(rms))
+    threshold = mean + 0.35 * std
+    min_gap = max(1, int(0.30 / window_sec))
+    beats: list[float] = []
+    last_idx = -min_gap
+    for i in range(1, len(rms) - 1):
+        if i - last_idx < min_gap:
+            continue
+        if rms[i] >= threshold and rms[i] >= rms[i - 1] and rms[i] >= rms[i + 1]:
+            beats.append(i * window_sec)
+            last_idx = i
+    return beats
+
+
+def pearson(xs: list[float], ys: list[float]) -> float | None:
+    n = min(len(xs), len(ys))
+    if n < 3:
+        return None
+    xs = xs[:n]
+    ys = ys[:n]
+    mx = sum(xs) / n
+    my = sum(ys) / n
+    vx = sum((x - mx) ** 2 for x in xs)
+    vy = sum((y - my) ** 2 for y in ys)
+    if vx <= 1e-12 or vy <= 1e-12:
+        return None
+    return sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / math.sqrt(vx * vy)
+
+
+def extract_evenly_spaced_frames(path: Path, out_dir: Path, *, max_frames: int = 8) -> list[Path]:
+    duration = ffprobe_duration(path)
+    if duration <= 0:
+        return []
+    out_dir.mkdir(parents=True, exist_ok=True)
+    if max_frames <= 1:
+        times = [duration / 2]
+    else:
+        pad = min(1.0, duration * 0.05)
+        start = pad
+        end = max(start, duration - pad)
+        times = [start + (end - start) * i / (max_frames - 1) for i in range(max_frames)]
+    paths: list[Path] = []
+    for idx, t in enumerate(times):
+        out = out_dir / f"frame_{idx:03d}.jpg"
+        run_cmd([
+            "ffmpeg", "-v", "error", "-ss", f"{t:.3f}", "-i", str(path),
+            "-frames:v", "1", "-vf", "scale=640:-2", "-q:v", "3", str(out),
+        ])
+        if out.exists() and out.stat().st_size > 0:
+            paths.append(out)
+    return paths

@@ -1,0 +1,27 @@
+# Copy this file to eval/config.yaml and fill in your VLM credentials.
+# eval/config.yaml is intentionally ignored by git.
+vlm:
+  model: qwen-vl-plus
+  api_key: YOUR_API_KEY_HERE
+  base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+  timeout_sec: 120
+  temperature: 0
+  max_frames: 8
+
+metrics:
+  # Seven-metric benchmark weights. If a metric such as human OQ is missing,
+  # the evaluator renormalizes over the metrics that are actually available.
+  weights:
+    IF: 0.1000
+    BCS: 0.2000
+    AEC: 0.2000
+    VQ: 0.1000
+    TC: 0.1000
+    NC: 0.1000
+    OQ: 0.2000
+
+automatic_metrics:
+  video_sample_fps: 2.0
+  audio_window_sec: 0.5
+  beat_window_sec: 0.05
+  bcs_tau_sec: 0.12

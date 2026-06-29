@@ -31,10 +31,10 @@ Recommended output layout:
 runs/<run_id>/run_manifest.json
 runs/<run_id>/run_outputs.jsonl
 runs/<run_id>/task_outputs/<task_id>/output.mp4
-runs/<run_id>/task_outputs/<task_id>/run.json
+runs/<run_id>/task_outputs/<task_id>/run_output.json
 runs/<run_id>/task_outputs/<task_id>/logs/backend.log
 runs/<run_id>/task_outputs/<task_id>/artifacts/shot_plan.json
-evaluations/<eval_id>/scores.jsonl
+eval_results/<eval_id>/evaluation_scores.jsonl
 ```
 
 See `docs/run_submission_format.md` for the exact submission contract.

@@ -116,10 +116,10 @@ def main(argv):
         if record["target_shot_length_sec"] != task["task"]["target_shot_length_sec"]:
             errors.append(f"record {i}: target_shot_length_sec does not match task {task_id}")
 
-        per_task_json = run_dir / "task_outputs" / task_id / "run.json"
+        per_task_json = run_dir / "task_outputs" / task_id / "run_output.json"
         per_task_record = read_json(per_task_json, errors)
         if per_task_record and per_task_record != record:
-            errors.append(f"record {i}: task_outputs/{task_id}/run.json differs from run_outputs.jsonl")
+            errors.append(f"record {i}: task_outputs/{task_id}/run_output.json differs from run_outputs.jsonl")
 
         if record["status"] == "success":
             video_path = ROOT / record["output_video"]

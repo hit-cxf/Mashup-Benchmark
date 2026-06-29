@@ -13,7 +13,7 @@ runs/<run_id>/
   task_outputs/
     <task_id>/
       output.mp4
-      run.json
+      run_output.json
       logs/
         backend.log
       artifacts/
@@ -31,9 +31,9 @@ baseline_random
 
 Use stable names for comparison runs. Add a date only when the same method/config is intentionally rerun and both results need to be kept.
 
-## Per-Task `run.json`
+## Per-Task `run_output.json`
 
-`task_outputs/<task_id>/run.json` is the canonical per-task record and must follow `schemas/run_output.schema.json`.
+`task_outputs/<task_id>/run_output.json` is the canonical per-task record and must follow `schemas/run_output.schema.json`.
 
 Required fields:
 
@@ -52,6 +52,7 @@ Required fields:
 Recommended optional fields:
 
 - `api_cost_usd`: total API cost for the task.
+- `human_scores.OQ` or `scores.OQ`: optional human overall quality score on `[0, 100]`; if present, it is included in the seven-metric `Quality` score.
 - `code_commit`: source code commit used for the method.
 - `config`: key model and algorithm settings.
 - `artifacts`: paths to logs, shot plans, intermediate plans, or traces.
@@ -92,12 +93,12 @@ Example:
 
 ## `run_outputs.jsonl`
 
-`run_outputs.jsonl` duplicates the per-task `run.json` records as JSONL so evaluation scripts can stream a whole run without walking directories.
+`run_outputs.jsonl` duplicates the per-task `run_output.json` records as JSONL so evaluation scripts can stream a whole run without walking directories.
 
 Every successful task should have both:
 
 ```text
-task_outputs/<task_id>/run.json
+task_outputs/<task_id>/run_output.json
 one matching line in run_outputs.jsonl
 ```
 
@@ -143,8 +144,8 @@ Example:
 Evaluation outputs are separate from generated videos:
 
 ```text
-evaluations/<eval_id>/
-  scores.jsonl
+eval_results/<eval_id>/
+  evaluation_scores.jsonl
   summary.json
 ```
 

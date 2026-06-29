@@ -33,7 +33,7 @@
   "output_dirs": {
     "system_outputs": "outputs/",
     "run_logs": "runs/",
-    "evaluation_results": "evaluations/",
+    "evaluation_results": "eval_results/",
     "reports": "reports/"
   }
 }

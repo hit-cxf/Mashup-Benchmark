@@ -99,6 +99,28 @@
       "type": "object",
       "additionalProperties": true
     },
+    "human_scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "OQ": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "scores": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "OQ": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
     "artifacts": {
       "type": "object",
       "additionalProperties": {

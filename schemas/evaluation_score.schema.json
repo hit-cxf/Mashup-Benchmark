@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Mashup-Benchmark evaluation score record",
   "type": "object",
+  "additionalProperties": true,
   "required": [
     "eval_id",
     "run_id",
@@ -18,43 +19,108 @@
     "task_id": {
       "type": "string"
     },
+    "method": {
+      "type": "string"
+    },
+    "method_version": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "success",
+        "skipped",
+        "failed"
+      ]
+    },
     "judge": {
-      "type": "object"
+      "type": [
+        "object",
+        "null"
+      ]
     },
     "scores": {
       "type": "object",
       "properties": {
         "IF": {
-          "type": "number"
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
         },
         "BCS": {
-          "type": "number"
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
         },
         "AEC": {
-          "type": "number"
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
         },
         "VQ": {
-          "type": "number"
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
         },
         "TC": {
-          "type": "number"
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
         },
         "NC": {
-          "type": "number"
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
         },
         "OQ": {
-          "type": "number"
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
         },
         "Quality": {
-          "type": "number"
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
         }
       }
+    },
+    "metric_details": {
+      "type": "object"
     },
     "cost": {
       "type": "object"
     },
+    "efficiency": {
+      "type": "object"
+    },
     "rationale": {
-      "type": "string"
+      "type": [
+        "object",
+        "string"
+      ]
     }
   }
 }
