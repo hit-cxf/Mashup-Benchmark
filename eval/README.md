@@ -7,7 +7,7 @@ This package evaluates submitted runs under `runs/<run_id>/`.
 Cross-modal alignment:
 
 - `IF`: instruction following, scored by VLM-as-judge.
-- `BCS`: beat-cut synchronization, computed from detected visual cuts and audio beat peaks.
+- `BCS`: beat-cut synchronization, computed from full-frame scene-change detection on the final rendered video and audio beat peaks.
 - `AEC`: audio-visual energy correspondence, computed from visual motion and audio RMS correlation.
 
 Single-modal quality:

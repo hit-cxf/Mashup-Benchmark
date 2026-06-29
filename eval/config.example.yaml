@@ -21,7 +21,11 @@ metrics:
     OQ: 0.2000
 
 automatic_metrics:
+  # AEC motion-energy sampling.
   video_sample_fps: 2.0
   audio_window_sec: 0.5
+  # BCS full-frame scene-change detection on the final rendered video.
+  scene_threshold: 0.30
+  scene_min_gap_sec: 0.25
   beat_window_sec: 0.05
   bcs_tau_sec: 0.12

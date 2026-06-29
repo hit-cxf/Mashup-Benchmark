@@ -91,7 +91,8 @@ def main() -> int:
         output_video = ROOT / record["output_video"]
         bcs = beat_cut_synchronization(
             output_video,
-            fps=float(auto_cfg.get("video_sample_fps", 2.0)),
+            scene_threshold=float(auto_cfg.get("scene_threshold", 0.30)),
+            scene_min_gap_sec=float(auto_cfg.get("scene_min_gap_sec", 0.25)),
             beat_window_sec=float(auto_cfg.get("beat_window_sec", 0.05)),
             tau_sec=float(auto_cfg.get("bcs_tau_sec", 0.12)),
         )

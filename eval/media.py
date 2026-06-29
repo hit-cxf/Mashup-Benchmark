@@ -3,6 +3,7 @@ from __future__ import annotations
 import array
 import json
 import math
+import re
 import subprocess
 from pathlib import Path
 
@@ -20,6 +21,21 @@ def run_cmd(cmd: list[str], *, input_bytes: bytes | None = None, timeout: int | 
         stderr = proc.stderr.decode("utf-8", errors="replace")[-2000:]
         raise RuntimeError(f"command failed ({proc.returncode}): {' '.join(cmd)}\n{stderr}")
     return proc.stdout
+
+
+def run_cmd_capture_stderr(cmd: list[str], *, input_bytes: bytes | None = None, timeout: int | None = None) -> tuple[bytes, bytes]:
+    proc = subprocess.run(
+        cmd,
+        input=input_bytes,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=timeout,
+        check=False,
+    )
+    if proc.returncode != 0:
+        stderr = proc.stderr.decode("utf-8", errors="replace")[-2000:]
+        raise RuntimeError(f"command failed ({proc.returncode}): {' '.join(cmd)}\n{stderr}")
+    return proc.stdout, proc.stderr
 
 
 def ffprobe_duration(path: Path) -> float:
@@ -119,22 +135,22 @@ def video_motion_series(path: Path, *, fps: float = 2.0, width: int = 320) -> li
     return values
 
 
-def detect_visual_cuts(path: Path, *, fps: float = 2.0) -> list[float]:
-    motion = video_motion_series(path, fps=fps)
-    if len(motion) < 3:
-        return []
-    mean = sum(motion) / len(motion)
-    std = math.sqrt(sum((v - mean) ** 2 for v in motion) / len(motion))
-    threshold = mean + 1.5 * std
-    min_gap = max(1, int(1.0 * fps))
+def detect_visual_cuts(path: Path, *, scene_threshold: float = 0.30, min_gap_sec: float = 0.25) -> list[float]:
+    # Full-frame scene-change detection on the rendered output video. This catches
+    # both edit boundaries and internal cuts inside selected source clips.
+    _, stderr = run_cmd_capture_stderr([
+        "ffmpeg", "-hide_banner", "-nostats", "-v", "info", "-i", str(path),
+        "-filter:v", f"select=gt(scene\\,{scene_threshold}),showinfo",
+        "-an", "-f", "null", "-",
+    ])
+    raw_times = [
+        float(match.group(1))
+        for match in re.finditer(rb"pts_time:([0-9]+(?:\.[0-9]+)?)", stderr)
+    ]
     cuts: list[float] = []
-    last_idx = -min_gap
-    for i in range(1, len(motion) - 1):
-        if i - last_idx < min_gap:
-            continue
-        if motion[i] >= threshold and motion[i] >= motion[i - 1] and motion[i] >= motion[i + 1]:
-            cuts.append((i + 1) / fps)
-            last_idx = i
+    for time_sec in raw_times:
+        if not cuts or time_sec - cuts[-1] >= min_gap_sec:
+            cuts.append(time_sec)
     return cuts
 
 

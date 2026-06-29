@@ -45,7 +45,7 @@ Implementation: VLM-as-judge. The evaluator samples frames from the generated vi
 
 Measures whether visual cuts align with music beats or energy peaks.
 
-Implementation: the evaluator samples frames, detects visual discontinuity peaks as cuts, extracts audio RMS peaks as beats, computes each cut's distance to the nearest beat, and averages `exp(-distance / tau)`.
+Implementation: the evaluator runs full-frame scene-change detection on the final rendered video, extracts audio RMS peaks as beats, computes each detected visual cut's distance to the nearest beat, and averages `exp(-distance / tau)`. It does not read the edit timeline, so internal cuts inside selected source clips are counted.
 
 ### AEC: Audio-Visual Energy Correspondence
 

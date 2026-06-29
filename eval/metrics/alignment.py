@@ -7,12 +7,26 @@ from typing import Any
 from eval.media import audio_rms_series, detect_audio_beats, detect_visual_cuts, pearson, video_motion_series
 
 
-def beat_cut_synchronization(output_video: Path, *, fps: float = 2.0, beat_window_sec: float = 0.05, tau_sec: float = 0.12) -> dict[str, Any]:
-    cuts = detect_visual_cuts(output_video, fps=fps)
+def beat_cut_synchronization(
+    output_video: Path,
+    *,
+    scene_threshold: float = 0.30,
+    scene_min_gap_sec: float = 0.25,
+    beat_window_sec: float = 0.05,
+    tau_sec: float = 0.12,
+) -> dict[str, Any]:
+    cuts = detect_visual_cuts(
+        output_video,
+        scene_threshold=scene_threshold,
+        min_gap_sec=scene_min_gap_sec,
+    )
     beats = detect_audio_beats(output_video, window_sec=beat_window_sec)
     if not cuts or not beats:
         return {
             "score": 0.0,
+            "cut_detection": "ffmpeg_scene_full_frame",
+            "scene_threshold": scene_threshold,
+            "scene_min_gap_sec": scene_min_gap_sec,
             "num_cuts": len(cuts),
             "num_beats": len(beats),
             "mean_nearest_beat_distance_sec": None,
@@ -22,6 +36,9 @@ def beat_cut_synchronization(output_video: Path, *, fps: float = 2.0, beat_windo
     raw = sum(math.exp(-d / tau_sec) for d in distances) / len(distances)
     return {
         "score": max(0.0, min(100.0, raw * 100.0)),
+        "cut_detection": "ffmpeg_scene_full_frame",
+        "scene_threshold": scene_threshold,
+        "scene_min_gap_sec": scene_min_gap_sec,
         "num_cuts": len(cuts),
         "num_beats": len(beats),
         "mean_nearest_beat_distance_sec": sum(distances) / len(distances),

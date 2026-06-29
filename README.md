@@ -94,7 +94,7 @@ Quality = weighted_mean(IF, BCS, AEC, VQ, TC, NC, OQ)
 指标含义：
 
 - IF：Instruction Following，指令遵循。
-- BCS：Beat-Cut Synchronization，节拍-切点同步。
+- BCS：Beat-Cut Synchronization，节拍-切点同步；基于最终成片的全帧视觉切换检测，不读取编辑 timeline。
 - AEC：Audio-Visual Energy Correspondence，音画能量对应。
 - VQ：Visual Quality，视觉质量。
 - TC：Transition Continuity，片段和转场连续性。

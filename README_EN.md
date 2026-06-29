@@ -94,7 +94,7 @@ Weighting policy:
 Metrics:
 
 - IF: Instruction Following.
-- BCS: Beat-Cut Synchronization.
+- BCS: Beat-Cut Synchronization; based on full-frame visual cut detection on the final rendered video, without reading the edit timeline.
 - AEC: Audio-Visual Energy Correspondence.
 - VQ: Visual Quality.
 - TC: Transition Continuity.
