@@ -35,13 +35,13 @@ cp eval/config.example.yaml eval/config.yaml
 ## Run
 
 ```bash
-python3 -m eval.run_evaluation --run runs/<run_id> --config eval/config.yaml
+uv run python -m eval.run_evaluation --run runs/<run_id> --config eval/config.yaml
 ```
 
 Smoke-test automatic metrics only:
 
 ```bash
-python3 -m eval.run_evaluation --run runs/<run_id> --skip-vlm --limit 1
+uv run python -m eval.run_evaluation --run runs/<run_id> --skip-vlm --limit 1
 ```
 
 Outputs:

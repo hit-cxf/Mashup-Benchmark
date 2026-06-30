@@ -68,13 +68,44 @@ Mashup-Benchmark/
 
 ## Expected System Output
 
-For each task, a tested system should produce one complete edited short video. Baseline or system outputs should be placed at:
+One `run` represents the complete output of one baseline or ablation setting on one or more benchmark tasks. Each task should produce one complete edited short video and use the following structure:
 
 ```text
-runs/<run_id>/task_outputs/<task_id>/output.mp4
+runs/<run_id>/
+  run_manifest.json             # Whole-run metadata, following schemas/run_manifest.schema.json
+  run_outputs.jsonl             # JSONL index of all per-task run_output.json records
+  task_outputs/
+    <task_id>/
+      output.mp4                # Final edited video for this task, consumed directly by the evaluator
+      run_output.json           # Per-task metadata, following schemas/run_output.schema.json
+      logs/
+        backend.log             # Optional raw pipeline log
+        render.log              # Optional render log
+      artifacts/
+        benchmark_task.json     # Optional snapshot of the benchmark task input
+        shot_plan.json          # Optional method-internal editing plan
+        shot_point.json         # Optional method-internal edit points or timeline
 ```
 
-Per-task metadata must follow `schemas/run_output.schema.json`; whole-run metadata must follow `schemas/run_manifest.schema.json`. See `docs/run_submission_format.md` for the full submission format.
+`<run_id>` identifies the method and experiment setting, for example `cutclaw_benchmark` or `cutmaster_embedding_v4_full`; `<task_id>` uses the canonical `task_001` to `task_040` ids. The minimum required files for evaluation are `run_manifest.json`, `run_outputs.jsonl`, and each successful task's `output.mp4` and `run_output.json`. See `docs/run_submission_format.md` for the full submission format.
+
+## Environment Setup
+
+This benchmark uses `uv` to manage its own Python environment, independent from any baseline project's virtual environment. From the benchmark root, run:
+
+```bash
+uv sync
+```
+
+Then use `uv run` for validation, adapters, and evaluation:
+
+```bash
+uv run python scripts/validate_benchmark.py
+uv run python scripts/validate_run.py runs/<run_id>
+uv run python -m eval.run_evaluation --run runs/<run_id> --config eval/config.yaml
+```
+
+Media decoding and automatic metrics rely on the system commands `ffmpeg` and `ffprobe`; they are not installed by the Python environment, so make sure both are available on `PATH`. Local VLM credentials should be placed in `eval/config.yaml`, which is ignored by Git.
 
 ## Evaluation Dimensions
 
@@ -103,25 +134,107 @@ Metrics:
 
 Efficiency is reported separately as API cost and end-to-end latency. See `eval/README.md` for the runnable evaluator.
 
+## Baseline Evaluation
+
+This benchmark is designed to compare the following three long-video mashup/editing baselines. All baselines should write standardized outputs to `runs/<run_id>/` following `schemas/run_manifest.schema.json` and `schemas/run_output.schema.json`.
+
+### Common Baseline Adapter Configuration
+
+Each baseline adapter should follow the same shared argument conventions wherever possible. This keeps batch experiments reproducible and lets all methods plug into the same validators and evaluator. Each method may keep its own project root, Python environment, and raw intermediate outputs, but the adapter should always export benchmark-standardized artifacts under `runs/<run_id>/`.
+
+| Argument Pattern | Description |
+|---|---|
+| `--<baseline>-root` | External baseline project root, such as `--cutclaw-root`. The adapter invokes the baseline's original entrypoint from this directory. |
+| `--<baseline>-python` | Python executable used by the external baseline, such as `--cutclaw-python`. The recommended default is `<baseline-root>/.venv/bin/python`, with explicit overrides for conda, uv, or other environments. |
+| `--task-id` | Run one or more benchmark tasks, for example `task_006`. Task definitions come from `data/tasks/mashup_benchmark.jsonl`. |
+| `--all` | Run all 40 benchmark tasks. |
+| `--run-id` | Standardized result directory name, written to `runs/<run_id>/`. Prefer names that identify the method and setup, such as `cutclaw_benchmark`. |
+| `--results-root` | Standardized result root. Defaults to `runs/` inside this benchmark repo and should stay under the benchmark root for schema validation and evaluation. |
+| `--method` | Method name written to the manifest, such as `cutclaw`, `direct_claw`, or `videoagent`. |
+| `--method-version` | Method version or experiment label written to the manifest, used to distinguish original runs, ablations, and model configurations. |
+| `--overwrite` | Regenerate a task even if its `output.mp4` already exists. |
+| `--dry-run` | Print the commands and write skipped metadata without calling models or rendering, useful for checking paths and arguments. |
+
+Method-specific options are documented in each baseline section, such as CutClaw's hook dialogue, ending video, crop ratio, and source-video audio volume.
+
+### CutClaw
+
+CutClaw: Agentic Hours-Long Video Editing via Music Synchronization
+
+- Project: [https://github.com/GVCLab/CutClaw](https://github.com/GVCLab/CutClaw)
+- Paper: [https://arxiv.org/abs/2603.29664](https://arxiv.org/abs/2603.29664)
+- Status: benchmark adapter available.
+
+Use the benchmark-side CutClaw adapter to run selected tasks and write evaluation-ready artifacts to `runs/<run_id>/`:
+
+```bash
+python3 scripts/run_cutclaw.py \
+  --cutclaw-root /Users/xinfanchen/Project/CutClaw \
+  --task-id task_006 \
+  --run-id cutclaw_benchmark
+```
+
+Run all tasks in batch:
+
+```bash
+python3 scripts/run_cutclaw.py \
+  --cutclaw-root /Users/xinfanchen/Project/CutClaw \
+  --all \
+  --run-id cutclaw_benchmark
+```
+
+CutClaw-specific arguments:
+
+| Argument | Description |
+|---|---|
+| `--no-hook-dialogue` | Do not render CutClaw's hook-dialogue intro. |
+| `--no-ending` | Do not append CutClaw's ending video. |
+| `--crop-ratio` | Optional render crop ratio, such as `16:9`, `9:16`, or `1:1`. |
+| `--original-audio-volume` | Mixed-in source-video audio volume. Defaults to `0.0`, meaning BGM only. |
+| `--video-type` | Video type passed to CutClaw. The current default is `film`, kept for compatibility with CutClaw's original entrypoint. |
+
+CutClaw's raw intermediate outputs remain in the CutClaw project's `Output/` directory; the benchmark stores only the standardized `runs/<run_id>/` structure used for evaluation. After generation, validate and evaluate the run with:
+
+```bash
+python3 scripts/validate_run.py runs/cutclaw_benchmark
+python3 -m eval.run_evaluation --run runs/cutclaw_benchmark --config eval/config.yaml
+```
+
+### DIRECT-Claw
+
+DIRECT: Video Mashup Creation via Hierarchical Multi-Agent Planning and Intent-Guided Editing
+
+- Project: [https://github.com/AK-DREAM/DIRECT-Claw](https://github.com/AK-DREAM/DIRECT-Claw)
+- Paper: [https://arxiv.org/abs/2604.04875](https://arxiv.org/abs/2604.04875)
+- Status: benchmark adapter pending.
+
+### VideoAgent
+
+VideoAgent: All-in-One Framework for Video Understanding and Editing
+
+- Project: [https://github.com/HKUDS/VideoAgent](https://github.com/HKUDS/VideoAgent)
+- Paper: [https://arxiv.org/abs/2606.23327](https://arxiv.org/abs/2606.23327)
+- Status: benchmark adapter pending.
+
 ## Validation And Evaluation
 
 Validate the benchmark data structure:
 
 ```bash
-python3 scripts/validate_benchmark.py
+uv run python scripts/validate_benchmark.py
 ```
 
 Validate a submitted run:
 
 ```bash
-python3 scripts/validate_run.py runs/<run_id>
+uv run python scripts/validate_run.py runs/<run_id>
 ```
 
 Evaluate a submitted run:
 
 ```bash
 cp eval/config.example.yaml eval/config.yaml
-python3 -m eval.run_evaluation --run runs/<run_id> --config eval/config.yaml
+uv run python -m eval.run_evaluation --run runs/<run_id> --config eval/config.yaml
 ```
 
 `eval/config.yaml` configures the VLM model name, API key, base URL, timeout, and metric weights. This file contains local credentials and is ignored by Git; do not commit it.

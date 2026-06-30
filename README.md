@@ -68,13 +68,44 @@ Mashup-Benchmark/
 
 ## 系统输出格式
 
-对每个任务，待测系统需要生成一个完整的短视频成片。Baseline 或待测方法的输出应放在：
+一个 `run` 表示某个 baseline 或消融配置在一个或多个 benchmark task 上的完整输出。每个任务需要生成一个完整的短视频成片，并按下面的结构保存：
 
 ```text
-runs/<run_id>/task_outputs/<task_id>/output.mp4
+runs/<run_id>/
+  run_manifest.json             # 整次运行的全局元数据，符合 schemas/run_manifest.schema.json
+  run_outputs.jsonl             # 每个 task 的 run_output.json 记录汇总，每行一个 JSON
+  task_outputs/
+    <task_id>/
+      output.mp4                # 该 task 的最终成片，评测器直接读取这个视频
+      run_output.json           # 该 task 的元数据，符合 schemas/run_output.schema.json
+      logs/
+        backend.log             # 可选，原始 pipeline 日志
+        render.log              # 可选，渲染日志
+      artifacts/
+        benchmark_task.json     # 可选，该 task 的输入定义快照
+        shot_plan.json          # 可选，方法内部生成的剪辑计划
+        shot_point.json         # 可选，方法内部生成的剪辑点或时间线
 ```
 
-每个任务的元数据需要符合 `schemas/run_output.schema.json`；整次运行的元数据需要符合 `schemas/run_manifest.schema.json`。详细提交格式见 `docs/run_submission_format.md`。
+其中 `<run_id>` 用于标识方法和实验设置，例如 `cutclaw_benchmark` 或 `cutmaster_embedding_v4_full`；`<task_id>` 使用 `task_001` 到 `task_040` 的规范编号。评测时最小必需文件是 `run_manifest.json`、`run_outputs.jsonl`，以及每个成功 task 下的 `output.mp4` 和 `run_output.json`。详细提交格式见 `docs/run_submission_format.md`。
+
+## 环境配置
+
+本 benchmark 使用 `uv` 管理自己的 Python 环境，避免依赖任何 baseline 项目的虚拟环境。首次使用时在 benchmark 根目录运行：
+
+```bash
+uv sync
+```
+
+之后推荐通过 `uv run` 执行校验、adapter 和评测脚本：
+
+```bash
+uv run python scripts/validate_benchmark.py
+uv run python scripts/validate_run.py runs/<run_id>
+uv run python -m eval.run_evaluation --run runs/<run_id> --config eval/config.yaml
+```
+
+媒体解码和自动指标计算依赖系统命令 `ffmpeg` 与 `ffprobe`，它们不由 Python 环境安装；请确保二者在 `PATH` 中可用。VLM 密钥等本地配置写入 `eval/config.yaml`，该文件已被 Git 忽略。
 
 ## 评测维度
 
@@ -103,25 +134,107 @@ Quality = weighted_mean(IF, BCS, AEC, VQ, TC, NC, OQ)
 
 效率单独报告，包括 API 成本和端到端耗时。可运行评测器的说明见 `eval/README.md`。
 
+## Baseline 评测
+
+本 benchmark 计划对比以下三个长视频 mashup/editing baseline。所有 baseline 的标准化输出均写入 `runs/<run_id>/`，并遵循 `schemas/run_manifest.schema.json` 与 `schemas/run_output.schema.json`。
+
+### Baseline Adapter 通用配置
+
+每个 baseline adapter 都应尽量遵循同一组通用参数，方便批量实验、复现和接入统一评测器。不同方法的项目根目录、Python 环境和原始输出可以各自独立，但最终都需要写出 benchmark 标准化的 `runs/<run_id>/` 结构。
+
+| 参数模式                | 说明                                                                                                                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--<baseline>-root`   | 外部 baseline 项目根目录，例如`--cutclaw-root`。adapter 会在该目录中调用 baseline 原始入口脚本。                                                                       |
+| `--<baseline>-python` | 外部 baseline 使用的 Python 解释器，例如`--cutclaw-python`。默认建议优先使用 `<baseline-root>/.venv/bin/python`，也可以显式指定 conda、uv 或其他虚拟环境中的解释器。 |
+| `--task-id`           | 指定一个或多个 benchmark task，例如`task_006`。task 定义来自 `data/tasks/mashup_benchmark.jsonl`。                                                                   |
+| `--all`               | 批量运行全部 40 个 benchmark task。                                                                                                                                      |
+| `--run-id`            | 标准化结果目录名，输出到`runs/<run_id>/`。建议用方法名和实验设置命名，例如 `cutclaw_benchmark`。                                                                     |
+| `--results-root`      | 标准化结果根目录，默认是 benchmark 仓库内的`runs/`。该目录应保持在 benchmark 根目录下，便于 schema 校验和评测器读取。                                                  |
+| `--method`            | 写入 manifest 的方法名，例如`cutclaw`、`direct_claw`、`videoagent`。                                                                                               |
+| `--method-version`    | 写入 manifest 的方法版本或实验标识，用于区分原版、消融实验和不同模型配置。                                                                                               |
+| `--overwrite`         | 即使该 task 的`output.mp4` 已存在，也重新生成。                                                                                                                        |
+| `--dry-run`           | 只打印将要执行的命令并写入跳过元数据，不调用模型或渲染，适合检查路径和参数。                                                                                             |
+
+方法独有的开关放在各 baseline 小节中说明，例如 CutClaw 的 hook dialogue、ending video、裁剪比例和原视频音量。
+
+### CutClaw
+
+CutClaw: Agentic Hours-Long Video Editing via Music Synchronization
+
+- 项目：[https://github.com/GVCLab/CutClaw](https://github.com/GVCLab/CutClaw)
+- 论文：[https://arxiv.org/abs/2603.29664](https://arxiv.org/abs/2603.29664)
+- 当前状态：已提供 benchmark adapter。
+
+使用 benchmark 侧的 CutClaw adapter 运行指定任务，并将可评测产物写入 `runs/<run_id>/`：
+
+```bash
+python3 scripts/run_cutclaw.py \
+  --cutclaw-root /Users/xinfanchen/Project/CutClaw \
+  --task-id task_006 \
+  --run-id cutclaw_benchmark
+```
+
+批量运行全部任务：
+
+```bash
+python3 scripts/run_cutclaw.py \
+  --cutclaw-root /Users/xinfanchen/Project/CutClaw \
+  --all \
+  --run-id cutclaw_benchmark
+```
+
+CutClaw 特有参数：
+
+| 参数                        | 说明                                                                           |
+| --------------------------- | ------------------------------------------------------------------------------ |
+| `--no-hook-dialogue`      | 渲染时不添加 CutClaw 的 hook dialogue 开场。                                   |
+| `--no-ending`             | 渲染时不追加 CutClaw 的 ending video。                                         |
+| `--crop-ratio`            | 可选裁剪比例，例如`16:9`、`9:16`、`1:1`。                                |
+| `--original-audio-volume` | 原视频声音混入音量，默认`0.0`，即只保留 BGM。                                |
+| `--video-type`            | 传给 CutClaw 的视频类型参数，当前默认使用`film`，用于兼容 CutClaw 原始入口。 |
+
+CutClaw 的原始中间结果仍保存在 CutClaw 项目的 `Output/` 中；benchmark 只保存用于评测的标准化 `runs/<run_id>/` 结构。运行完成后可用以下命令校验并评测：
+
+```bash
+python3 scripts/validate_run.py runs/cutclaw_benchmark
+python3 -m eval.run_evaluation --run runs/cutclaw_benchmark --config eval/config.yaml
+```
+
+### DIRECT-Claw
+
+DIRECT: Video Mashup Creation via Hierarchical Multi-Agent Planning and Intent-Guided Editing
+
+- 项目：[https://github.com/AK-DREAM/DIRECT-Claw](https://github.com/AK-DREAM/DIRECT-Claw)
+- 论文：[https://arxiv.org/abs/2604.04875](https://arxiv.org/abs/2604.04875)
+- 当前状态：待接入 benchmark adapter。
+
+### VideoAgent
+
+VideoAgent: All-in-One Framework for Video Understanding and Editing
+
+- 项目：[https://github.com/HKUDS/VideoAgent](https://github.com/HKUDS/VideoAgent)
+- 论文：[https://arxiv.org/abs/2606.23327](https://arxiv.org/abs/2606.23327)
+- 当前状态：待接入 benchmark adapter。
+
 ## 校验与评测
 
 校验 benchmark 数据结构：
 
 ```bash
-python3 scripts/validate_benchmark.py
+uv run python scripts/validate_benchmark.py
 ```
 
 校验一个待测 run：
 
 ```bash
-python3 scripts/validate_run.py runs/<run_id>
+uv run python scripts/validate_run.py runs/<run_id>
 ```
 
 评测一个待测 run：
 
 ```bash
 cp eval/config.example.yaml eval/config.yaml
-python3 -m eval.run_evaluation --run runs/<run_id> --config eval/config.yaml
+uv run python -m eval.run_evaluation --run runs/<run_id> --config eval/config.yaml
 ```
 
 `eval/config.yaml` 用于配置 VLM 模型名、API key、base URL、超时时间和指标权重。该文件包含本地密钥配置，已被 Git 忽略；请不要提交。
