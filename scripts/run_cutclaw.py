@@ -43,11 +43,15 @@ def task_lookup(tasks: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
 
 def resolve_cutclaw_python(cutclaw_root: Path, explicit_python: Path | None = None) -> Path:
     if explicit_python is not None:
-        return explicit_python.resolve()
+        explicit_python = explicit_python.expanduser()
+        return explicit_python if explicit_python.is_absolute() else explicit_python.absolute()
     venv_python = cutclaw_root / ".venv" / "bin" / "python"
     if venv_python.exists():
-        return venv_python.resolve()
-    return Path(sys.executable).resolve()
+        # Keep the venv entrypoint path instead of resolving its symlink target.
+        # uv-created venvs often point bin/python at the managed base interpreter;
+        # executing the resolved target bypasses pyvenv.cfg and loses site-packages.
+        return venv_python
+    return Path(sys.executable).absolute()
 
 
 def cutclaw_media_id(path: Path) -> str:
