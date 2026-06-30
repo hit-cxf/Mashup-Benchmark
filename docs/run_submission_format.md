@@ -129,6 +129,23 @@ Example:
     "commit": "git_sha",
     "dirty": false
   },
+  "adapter": {
+    "name": "run_cutclaw",
+    "script": "scripts/run_cutclaw.py",
+    "project_root": "/path/to/CutClaw",
+    "python": "/path/to/CutClaw/.venv/bin/python",
+    "benchmark_root": "/path/to/Mashup-Benchmark",
+    "results_root": "runs",
+    "raw_output_root": "/path/to/CutClaw/Output",
+    "task_selection": {
+      "mode": "all",
+      "task_ids": ["task_001", "task_002"]
+    },
+    "options": {
+      "overwrite": false,
+      "dry_run": false
+    }
+  },
   "config": {
     "embedding_model": "text-embedding-v4",
     "target_output_length_sec": 60,

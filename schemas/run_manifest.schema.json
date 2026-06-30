@@ -99,6 +99,91 @@
         }
       }
     },
+    "adapter": {
+      "type": "object",
+      "description": "Benchmark adapter metadata describing how an external baseline was invoked and normalized into the run directory.",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "script",
+        "project_root",
+        "python",
+        "benchmark_root",
+        "results_root",
+        "task_selection"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Adapter name, e.g. run_cutclaw."
+        },
+        "script": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Adapter script path, preferably relative to the benchmark root."
+        },
+        "project_root": {
+          "type": "string",
+          "minLength": 1,
+          "description": "External baseline project root, e.g. the CutClaw repository path."
+        },
+        "python": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Python executable used to run the external baseline."
+        },
+        "benchmark_root": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Benchmark repository root used by this adapter invocation."
+        },
+        "results_root": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Standardized run results root, preferably relative to the benchmark root."
+        },
+        "raw_output_root": {
+          "type": "string",
+          "description": "External baseline raw output root, when applicable."
+        },
+        "task_selection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "task_ids"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "all",
+                "task_ids"
+              ]
+            },
+            "task_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^task_[0-9]{3}$"
+              }
+            }
+          }
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "overwrite": {
+              "type": "boolean"
+            },
+            "dry_run": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
     "config": {
       "type": "object",
       "additionalProperties": true
