@@ -162,6 +162,7 @@ Quality = weighted_mean(IF, BCS, AEC, VQ, TC, NC, OQ)
 CutClaw: Agentic Hours-Long Video Editing via Music Synchronization
 
 - 项目：[https://github.com/GVCLab/CutClaw](https://github.com/GVCLab/CutClaw)
+- Fork：[https://github.com/hit-cxf/CutClaw](https://github.com/hit-cxf/CutClaw)
 - 论文：[https://arxiv.org/abs/2603.29664](https://arxiv.org/abs/2603.29664)
 - 当前状态：已提供 benchmark adapter。
 
@@ -205,6 +206,7 @@ python3 -m eval.run_evaluation --run runs/cutclaw_benchmark --config eval/config
 DIRECT: Video Mashup Creation via Hierarchical Multi-Agent Planning and Intent-Guided Editing
 
 - 项目：[https://github.com/AK-DREAM/DIRECT-Claw](https://github.com/AK-DREAM/DIRECT-Claw)
+- Fork：[https://github.com/hit-cxf/DIRECT-Claw](https://github.com/hit-cxf/DIRECT-Claw)
 - 论文：[https://arxiv.org/abs/2604.04875](https://arxiv.org/abs/2604.04875)
 - 当前状态：待接入 benchmark adapter。
 
@@ -213,6 +215,7 @@ DIRECT: Video Mashup Creation via Hierarchical Multi-Agent Planning and Intent-G
 VideoAgent: All-in-One Framework for Video Understanding and Editing
 
 - 项目：[https://github.com/HKUDS/VideoAgent](https://github.com/HKUDS/VideoAgent)
+- Fork：[https://github.com/hit-cxf/VideoAgent](https://github.com/hit-cxf/VideoAgent)
 - 论文：[https://arxiv.org/abs/2606.23327](https://arxiv.org/abs/2606.23327)
 - 当前状态：待接入 benchmark adapter。
 

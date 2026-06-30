@@ -162,6 +162,7 @@ Method-specific options are documented in each baseline section, such as CutClaw
 CutClaw: Agentic Hours-Long Video Editing via Music Synchronization
 
 - Project: [https://github.com/GVCLab/CutClaw](https://github.com/GVCLab/CutClaw)
+- Fork: [https://github.com/hit-cxf/CutClaw](https://github.com/hit-cxf/CutClaw)
 - Paper: [https://arxiv.org/abs/2603.29664](https://arxiv.org/abs/2603.29664)
 - Status: benchmark adapter available.
 
@@ -205,6 +206,7 @@ python3 -m eval.run_evaluation --run runs/cutclaw_benchmark --config eval/config
 DIRECT: Video Mashup Creation via Hierarchical Multi-Agent Planning and Intent-Guided Editing
 
 - Project: [https://github.com/AK-DREAM/DIRECT-Claw](https://github.com/AK-DREAM/DIRECT-Claw)
+- Fork: [https://github.com/hit-cxf/DIRECT-Claw](https://github.com/hit-cxf/DIRECT-Claw)
 - Paper: [https://arxiv.org/abs/2604.04875](https://arxiv.org/abs/2604.04875)
 - Status: benchmark adapter pending.
 
@@ -213,6 +215,7 @@ DIRECT: Video Mashup Creation via Hierarchical Multi-Agent Planning and Intent-G
 VideoAgent: All-in-One Framework for Video Understanding and Editing
 
 - Project: [https://github.com/HKUDS/VideoAgent](https://github.com/HKUDS/VideoAgent)
+- Fork: [https://github.com/hit-cxf/VideoAgent](https://github.com/hit-cxf/VideoAgent)
 - Paper: [https://arxiv.org/abs/2606.23327](https://arxiv.org/abs/2606.23327)
 - Status: benchmark adapter pending.
 
