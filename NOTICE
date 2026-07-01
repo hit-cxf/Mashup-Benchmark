@@ -2,6 +2,8 @@ Mashup-Benchmark Notice
 
 This repository includes benchmark metadata, task definitions, prompts,
 schemas, evaluation code, documentation, and example run metadata.
+Repository-authored benchmark prompts and metadata are licensed under the
+Apache License, Version 2.0, as described in LICENSE.
 
 The repository does not redistribute source videos or audio assets. Users
 must obtain all source media from lawful sources and comply with the

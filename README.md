@@ -299,8 +299,7 @@ uv run python -m eval.run_evaluation --run runs/<run_id> --config eval/config.ya
 
 ## 许可证
 
-- 代码使用 Apache License 2.0，见 `LICENSE`。
-- benchmark 元数据、任务定义、prompt、schema、manifest 和文档使用 CC BY-NC 4.0，见 `LICENSE-DATA`。
+- 仓库自有的代码、benchmark 元数据、任务定义、prompt、schema、manifest、文档和评测标注使用 Apache License 2.0，见 `LICENSE`。
 - 本仓库不重新分发源视频或音频素材。用户需要自行从合法来源获取媒体文件，并遵守对应素材的原始版权、许可证和使用条款。
 - 包含第三方版权媒体的生成视频不属于本仓库代码或数据许可证的授权范围。
 

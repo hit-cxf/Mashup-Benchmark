@@ -299,8 +299,7 @@ uv run python -m eval.run_evaluation --run runs/<run_id> --config eval/config.ya
 
 ## License
 
-- Code is licensed under the Apache License 2.0. See `LICENSE`.
-- Benchmark metadata, task definitions, prompts, schemas, manifests, and documentation are licensed under CC BY-NC 4.0. See `LICENSE-DATA`.
+- Repository-authored code, benchmark metadata, task definitions, prompts, schemas, manifests, documentation, and evaluation annotations are licensed under the Apache License 2.0. See `LICENSE`.
 - This repository does not redistribute source videos or audio assets. Users must obtain all media files from lawful sources and comply with the original copyright, license, and terms of use for each asset.
 - Generated videos that contain third-party copyrighted media are not covered by this repository's code or data licenses.
 
