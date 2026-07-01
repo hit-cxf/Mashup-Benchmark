@@ -217,7 +217,58 @@ VideoAgent: All-in-One Framework for Video Understanding and Editing
 - Project: [https://github.com/HKUDS/VideoAgent](https://github.com/HKUDS/VideoAgent)
 - Fork: [https://github.com/hit-cxf/VideoAgent](https://github.com/hit-cxf/VideoAgent)
 - Paper: [https://arxiv.org/abs/2606.23327](https://arxiv.org/abs/2606.23327)
-- Status: benchmark adapter pending.
+- Status: benchmark adapter available.
+
+VideoAgent's original entrypoint is an interactive TUI launched by `python main.py`: the system first performs intent analysis, agent graph planning, graph judge/reflection, and then asks the user for missing parameters. For benchmark-scale reproducibility, the adapter fixes the most relevant music-montage sub-pipeline:
+
+```text
+VideoPreloader -> RhythmDetector -> RhythmContentGenerator -> VideoSearcher -> VideoEditor
+```
+
+Server environment used for reproduction:
+
+| Item | Configuration |
+| ---- | ------------- |
+| Machine | AutoDL Ubuntu 22.04 |
+| GPU | NVIDIA GeForce RTX 4090 24GB |
+| VideoAgent environment | `/root/miniconda3/envs/videoagent/bin/python` |
+| Benchmark environment | `uv run` from the benchmark root |
+| VideoAgent root | `/root/autodl-tmp/VideoAgent` |
+| Benchmark root | `/root/autodl-tmp/Mashup-Benchmark` |
+
+Run one task:
+
+```bash
+cd /root/autodl-tmp/Mashup-Benchmark
+uv run python3 scripts/run_videoagent.py \
+  --task-id task_001 \
+  --run-id videoagent_benchmark_smoke \
+  --overwrite
+```
+
+Run all tasks:
+
+```bash
+cd /root/autodl-tmp/Mashup-Benchmark
+uv run python3 scripts/run_videoagent.py \
+  --all \
+  --run-id videoagent_benchmark \
+  --overwrite
+```
+
+Reproduction changes and rationale:
+
+| Change | Rationale |
+| ------ | --------- |
+| Bypass the interactive TUI and call a fixed tool chain directly | The benchmark requires unattended batch execution; dynamic graph planning adds extra randomness and interactive inputs. |
+| Run the worker with the `videoagent` conda Python interpreter | Keeps VideoAgent inside its original dependency environment and prevents the benchmark `uv` environment from contaminating the baseline. |
+| Create underscore-free source-video aliases, e.g. `video001.mp4` | VideoAgent's `VideoEditor` parses segment ids with `segment_id.split("_")`; benchmark filenames contain multiple underscores and would break timestamp resolution. |
+| Trim the BGM to `target_output_length_sec` by default | VideoAgent generates the timeline from audio rhythm; trimming keeps output duration aligned with the benchmark target. |
+| Cache VideoRAG preprocessing results by `video_id` | Long-video indexing is expensive; each video has four tasks, so caching avoids redundant preprocessing. |
+| Copy `video_scene.json`, `cut_points.json`, retrieved segments, and logs into `runs/<run_id>/task_outputs/<task_id>/artifacts/` | Stores auditable intermediate artifacts in the standardized run directory for debugging and decision review. |
+| Add a `torchvision.transforms.functional_tensor` compatibility shim in the current VideoAgent environment | The environment uses `torch 2.3.1+cu121` and `torchvision 0.18.1+cu121`, while `pytorchvideo` still imports the removed private torchvision module. The shim is the smallest compatibility fix and avoids risky CUDA/PyTorch downgrades. |
+
+The adapter only changes the engineering entrypoint and environment compatibility. It does not modify VideoAgent's core retrieval, rhythm analysis, storyboard generation, or editing algorithms. The goal is to make VideoAgent reproducible as a baseline, not to strengthen or weaken its modeling capability.
 
 ## Validation And Evaluation
 

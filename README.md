@@ -217,7 +217,58 @@ VideoAgent: All-in-One Framework for Video Understanding and Editing
 - 项目：[https://github.com/HKUDS/VideoAgent](https://github.com/HKUDS/VideoAgent)
 - Fork：[https://github.com/hit-cxf/VideoAgent](https://github.com/hit-cxf/VideoAgent)
 - 论文：[https://arxiv.org/abs/2606.23327](https://arxiv.org/abs/2606.23327)
-- 当前状态：待接入 benchmark adapter。
+- 当前状态：已提供 benchmark adapter。
+
+VideoAgent 原始入口是 `python main.py` 的交互式 TUI：系统先用 LLM 做 intent analysis、agent graph planning、graph judge/reflection，再向用户询问缺失参数。为保证 benchmark 可批量、可复现、可校验，当前 adapter 固定使用 VideoAgent 中与音乐混剪最直接相关的子流程：
+
+```text
+VideoPreloader -> RhythmDetector -> RhythmContentGenerator -> VideoSearcher -> VideoEditor
+```
+
+服务器复现实验环境：
+
+| 项目 | 配置 |
+| ---- | ---- |
+| 机器 | AutoDL Ubuntu 22.04 |
+| GPU | NVIDIA GeForce RTX 4090 24GB |
+| VideoAgent 环境 | `/root/miniconda3/envs/videoagent/bin/python` |
+| Benchmark 环境 | benchmark 根目录下使用 `uv run` |
+| VideoAgent 根目录 | `/root/autodl-tmp/VideoAgent` |
+| Benchmark 根目录 | `/root/autodl-tmp/Mashup-Benchmark` |
+
+运行单个任务：
+
+```bash
+cd /root/autodl-tmp/Mashup-Benchmark
+uv run python3 scripts/run_videoagent.py \
+  --task-id task_001 \
+  --run-id videoagent_benchmark_smoke \
+  --overwrite
+```
+
+批量运行全部任务：
+
+```bash
+cd /root/autodl-tmp/Mashup-Benchmark
+uv run python3 scripts/run_videoagent.py \
+  --all \
+  --run-id videoagent_benchmark \
+  --overwrite
+```
+
+VideoAgent adapter 复现改动与理由：
+
+| 改动 | 理由 |
+| ---- | ---- |
+| 绕过交互式 TUI，直接调用固定工具链 | benchmark 需要无人值守批量运行；动态 graph planning 会引入额外随机性和交互输入。 |
+| 使用 `videoagent` conda 环境的 Python 解释器执行 worker | 保持 VideoAgent 原依赖环境，避免 benchmark 的 `uv` 环境污染 baseline。 |
+| 为源视频创建无下划线别名，例如 `video001.mp4` | VideoAgent 的 `VideoEditor` 用 `segment_id.split("_")` 解析片段名，原始 benchmark 文件名包含多个下划线，会导致时间片解析失败。 |
+| 默认把 BGM 裁剪到 `target_output_length_sec` | VideoAgent 按音频节奏生成时间线；裁剪音频可以让输出时长与 benchmark 目标时长一致。 |
+| 为每个 `video_id` 缓存 VideoRAG 预处理结果 | 长视频索引成本高；同一视频对应 4 个任务，缓存能显著减少重复预处理。 |
+| 将 `video_scene.json`、`cut_points.json`、检索片段和日志复制到 `runs/<run_id>/task_outputs/<task_id>/artifacts/` | 统一保存可审计中间结果，便于定位失败和复查剪辑决策。 |
+| 在当前 VideoAgent 环境中补充 `torchvision.transforms.functional_tensor` 兼容 shim | 当前环境为 `torch 2.3.1+cu121`、`torchvision 0.18.1+cu121`，而 `pytorchvideo` 仍引用旧的 torchvision 私有模块；shim 是最小兼容修复，避免降级 CUDA/PyTorch 造成更大环境风险。 |
+
+该 adapter 只改变工程入口和环境兼容性，不修改 VideoAgent 的核心检索、节奏分析、storyboard 生成或编辑算法。这样做的目标是让 VideoAgent 作为 baseline 可重复运行，而不是提高或削弱其模型能力。
 
 ## 校验与评测
 
