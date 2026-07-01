@@ -105,9 +105,14 @@ def _read_ppm_frames(blob: bytes):
             break
         width, height, maxval = map(int, tokens)
         if maxval != 255:
-            raise ValueError("only 8-bit PPM frames are supported")
-        while idx < n and blob[idx] in b" \t\r\n":
+            raise ValueError(f"only 8-bit PPM frames are supported; got maxval={maxval}")
+        # PPM P6 has exactly one whitespace byte after maxval. Do not skip
+        # arbitrary whitespace here because the following payload is binary and
+        # can legitimately start with space/newline-valued pixel bytes.
+        if idx < n and blob[idx] in b" \t\r\n":
             idx += 1
+            if idx < n and blob[idx - 1] == 13 and blob[idx] == 10:
+                idx += 1
         size = width * height * 3
         frame = blob[idx:idx + size]
         if len(frame) < size:
@@ -117,15 +122,27 @@ def _read_ppm_frames(blob: bytes):
 
 
 def video_motion_series(path: Path, *, fps: float = 2.0, width: int = 320) -> list[float]:
-    # PPM keeps parsing dependency-free while ffmpeg handles decoding/scaling.
-    vf = f"fps={fps},scale={width}:-2"
-    blob = run_cmd([
-        "ffmpeg", "-v", "error", "-i", str(path), "-vf", vf,
-        "-an", "-f", "image2pipe", "-vcodec", "ppm", "-",
+    # Use raw rgb24 frames instead of PPM so 10-bit/HDR inputs cannot surface as
+    # 16-bit PPM payloads.
+    vf = f"fps={fps},scale={width}:-2,format=rgb24"
+    blob, stderr = run_cmd_capture_stderr([
+        "ffmpeg", "-v", "info", "-i", str(path), "-vf", vf,
+        "-an", "-f", "rawvideo", "-pix_fmt", "rgb24", "-",
     ])
+    match = re.search(rb"Video: rawvideo.*?, rgb24.*?, (\d+)x(\d+)", stderr)
+    if not match:
+        stderr_text = stderr.decode("utf-8", errors="replace")[-2000:]
+        raise RuntimeError(f"could not determine rawvideo frame size from ffmpeg output\n{stderr_text}")
+    out_width = int(match.group(1))
+    out_height = int(match.group(2))
+    frame_size = out_width * out_height * 3
+    if frame_size <= 0:
+        return []
+
     prev: bytes | None = None
     values: list[float] = []
-    for frame in _read_ppm_frames(blob):
+    for start in range(0, len(blob) - frame_size + 1, frame_size):
+        frame = blob[start:start + frame_size]
         if prev is not None:
             step = max(1, len(frame) // 50000)
             diff = sum(abs(frame[i] - prev[i]) for i in range(0, min(len(frame), len(prev)), step))
