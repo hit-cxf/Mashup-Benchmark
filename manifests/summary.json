@@ -22,8 +22,8 @@
   ],
   "primary_task_file": "data/tasks/mashup_benchmark.jsonl",
   "asset_dirs": {
-    "videos": "data/videos/",
-    "audios": "data/audios/"
+    "videos": "data/videos/<video_id>/",
+    "audios": "data/audios/<audio_id>/"
   },
   "manifest_files": {
     "videos": "manifests/videos.json",

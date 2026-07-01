@@ -7,7 +7,7 @@
     "source_url": "https://mixkit.co/free-stock-music/tag/sports/",
     "asset_url": "https://assets.mixkit.co/music/51/51.mp3",
     "license_url": "https://mixkit.co/license/#musicFree",
-    "local_path": "data/audios/mixkit_sports_highlights_51.mp3",
+    "local_path": "data/audios/audio_001/mixkit_sports_highlights_51.mp3",
     "duration": "PT1M36S",
     "mood_tags": [
       "sports",
@@ -30,7 +30,7 @@
     "source_url": "https://mixkit.co/free-stock-music/tag/sports/",
     "asset_url": "https://assets.mixkit.co/music/989/989.mp3",
     "license_url": "https://mixkit.co/license/#musicFree",
-    "local_path": "data/audios/mixkit_dirty_thinkin_989.mp3",
+    "local_path": "data/audios/audio_002/mixkit_dirty_thinkin_989.mp3",
     "duration": "PT1M29S",
     "mood_tags": [
       "funk",
@@ -53,7 +53,7 @@
     "source_url": "https://mixkit.co/free-stock-music/tag/sports/",
     "asset_url": "https://assets.mixkit.co/music/124/124.mp3",
     "license_url": "https://mixkit.co/license/#musicFree",
-    "local_path": "data/audios/mixkit_techno_fest_vibes_124.mp3",
+    "local_path": "data/audios/audio_003/mixkit_techno_fest_vibes_124.mp3",
     "duration": "PT2M14S",
     "mood_tags": [
       "edm",
@@ -76,7 +76,7 @@
     "source_url": "https://mixkit.co/free-stock-music/tag/cinematic/",
     "asset_url": "https://assets.mixkit.co/music/871/871.mp3",
     "license_url": "https://mixkit.co/license/#musicFree",
-    "local_path": "data/audios/mixkit_fright_night_871.mp3",
+    "local_path": "data/audios/audio_004/mixkit_fright_night_871.mp3",
     "duration": "PT1M41S",
     "mood_tags": [
       "cinematic",
@@ -99,7 +99,7 @@
     "source_url": "https://mixkit.co/free-stock-music/tag/documentary/",
     "asset_url": "https://assets.mixkit.co/music/580/580.mp3",
     "license_url": "https://mixkit.co/license/#musicFree",
-    "local_path": "data/audios/mixkit_sun_and_his_daughter_580.mp3",
+    "local_path": "data/audios/audio_005/mixkit_sun_and_his_daughter_580.mp3",
     "duration": "PT2M48S",
     "mood_tags": [
       "nature",
@@ -122,7 +122,7 @@
     "source_url": "https://mixkit.co/free-stock-music/tag/documentary/",
     "asset_url": "https://assets.mixkit.co/music/587/587.mp3",
     "license_url": "https://mixkit.co/license/#musicFree",
-    "local_path": "data/audios/mixkit_discover_587.mp3",
+    "local_path": "data/audios/audio_006/mixkit_discover_587.mp3",
     "duration": "PT2M24S",
     "mood_tags": [
       "documentary",
@@ -145,7 +145,7 @@
     "source_url": "https://mixkit.co/free-stock-music/tag/documentary/",
     "asset_url": "https://assets.mixkit.co/music/292/292.mp3",
     "license_url": "https://mixkit.co/license/#musicFree",
-    "local_path": "data/audios/mixkit_relax_beat_292.mp3",
+    "local_path": "data/audios/audio_007/mixkit_relax_beat_292.mp3",
     "duration": "PT1M48S",
     "mood_tags": [
       "ambient",
@@ -168,7 +168,7 @@
     "source_url": "https://mixkit.co/free-stock-music/tag/cinematic/",
     "asset_url": "https://assets.mixkit.co/music/614/614.mp3",
     "license_url": "https://mixkit.co/license/#musicFree",
-    "local_path": "data/audios/mixkit_silent_descent_614.mp3",
+    "local_path": "data/audios/audio_008/mixkit_silent_descent_614.mp3",
     "duration": "PT2M40S",
     "mood_tags": [
       "film_score",
@@ -191,7 +191,7 @@
     "source_url": "https://mixkit.co/free-stock-music/tag/cinematic/",
     "asset_url": "https://assets.mixkit.co/music/676/676.mp3",
     "license_url": "https://mixkit.co/license/#musicFree",
-    "local_path": "data/audios/mixkit_epical_drums_01_676.mp3",
+    "local_path": "data/audios/audio_009/mixkit_epical_drums_01_676.mp3",
     "duration": "PT1M46S",
     "mood_tags": [
       "cinematic",
@@ -214,7 +214,7 @@
     "source_url": "https://mixkit.co/free-stock-music/tag/cinematic/",
     "asset_url": "https://assets.mixkit.co/music/88/88.mp3",
     "license_url": "https://mixkit.co/license/#musicFree",
-    "local_path": "data/audios/mixkit_romantic_getaway_88.mp3",
+    "local_path": "data/audios/audio_010/mixkit_romantic_getaway_88.mp3",
     "duration": "PT1M44S",
     "mood_tags": [
       "romantic",
@@ -237,7 +237,7 @@
     "source_url": "https://mixkit.co/free-stock-music/tag/cinematic/",
     "asset_url": "https://assets.mixkit.co/music/89/89.mp3",
     "license_url": "https://mixkit.co/license/#musicFree",
-    "local_path": "data/audios/mixkit_romantic_vacation_89.mp3",
+    "local_path": "data/audios/audio_011/mixkit_romantic_vacation_89.mp3",
     "duration": "PT1M52S",
     "mood_tags": [
       "jazz",

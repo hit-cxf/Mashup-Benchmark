@@ -53,8 +53,8 @@ The canonical task file is `data/tasks/mashup_benchmark.jsonl`. Each line is one
 Mashup-Benchmark/
   data/
     tasks/mashup_benchmark.jsonl # Canonical 40-task JSONL
-    videos/                      # Source long videos, ignored by Git
-    audios/                      # BGM audio files, ignored by Git
+    videos/<video_id>/             # Source long-video asset directories, ignored by Git
+    audios/<audio_id>/             # BGM audio asset directories, ignored by Git
   manifests/                     # Derived indexes for videos, audio, tasks, and summary
   schemas/                       # JSON Schema files for task/run/evaluation records
   scripts/                       # Validation and utility scripts

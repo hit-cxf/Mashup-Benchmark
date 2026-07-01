@@ -19,7 +19,7 @@ The system output is one complete short video for that item. Canonical task ids 
 
 ## Canonical File
 
-`data/tasks/mashup_benchmark.jsonl` is the source of truth. Files in `manifests/` are derived convenience indexes.
+`data/tasks/mashup_benchmark.jsonl` is the source of truth. Files in `manifests/` are derived convenience indexes. Source media files are stored in per-asset directories: `data/videos/<video_id>/...` and `data/audios/<audio_id>/...`.
 
 ## Run Record
 
