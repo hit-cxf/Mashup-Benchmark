@@ -152,7 +152,7 @@ Quality = weighted_mean(IF, BCS, AEC, VQ, TC, NC, OQ)
 | `--results-root`      | 标准化结果根目录，默认是 benchmark 仓库内的`runs/`。该目录应保持在 benchmark 根目录下，便于 schema 校验和评测器读取。                                                  |
 | `--method`            | 写入 manifest 的方法名，例如`cutclaw`、`direct_claw`、`videoagent`。                                                                                               |
 | `--method-version`    | 写入 manifest 的方法版本或实验标识，用于区分原版、消融实验和不同模型配置。                                                                                               |
-| `--overwrite`         | 即使该 task 的`output.mp4` 已存在，也重新生成。                                                                                                                        |
+| `--overwrite`         | 即使该 task 的`output.mp4` 已存在，也重新生成。默认行为是同名 run 可继续补跑：已成功且有成片的 task 会跳过，失败或不完整 task 会重试。                                  |
 | `--dry-run`           | 只打印将要执行的命令并写入跳过元数据，不调用模型或渲染，适合检查路径和参数。                                                                                             |
 
 方法独有的开关放在各 baseline 小节中说明，例如 CutClaw 的 hook dialogue、ending video、裁剪比例和原视频音量。
@@ -194,6 +194,8 @@ CutClaw 特有参数：
 | `--original-audio-volume` | 原视频声音混入音量，默认`0.0`，即只保留 BGM。                                |
 | `--video-type`            | 传给 CutClaw 的视频类型参数，当前默认使用`film`，用于兼容 CutClaw 原始入口。 |
 
+同一个 `run_id` 可以重复运行来补齐失败任务。默认情况下，adapter 会复用已有的成功任务输出；如果某个 task 之前记录为 `failed`，或者没有生成 `output.mp4`，再次运行同名 `run_id` 时会重试该 task。需要强制重跑所有已成功任务时再使用 `--overwrite`。
+
 CutClaw 的原始中间结果仍保存在 CutClaw 项目的 `Output/` 中；benchmark 只保存用于评测的标准化 `runs/<run_id>/` 结构。运行完成后可用以下命令校验并评测：
 
 ```bash
@@ -232,6 +234,8 @@ uv run python scripts/validate_benchmark.py
 ```bash
 uv run python scripts/validate_run.py runs/<run_id>
 ```
+
+如果某些 task 记录了非空 `error`，校验脚本会在 `TASKS WITH ERROR` 中列出对应 `task_id`、状态和错误信息。`failed` task 不要求存在 `output.mp4`，但必须在 `run_output.json` 中包含非空 `error` 字段。
 
 评测一个待测 run：
 

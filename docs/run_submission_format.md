@@ -104,6 +104,8 @@ task_outputs/<task_id>/run_output.json
 one matching line in run_outputs.jsonl
 ```
 
+Failed tasks are allowed in a partial run. A failed task does not need `output.mp4`, but its `run_output.json` record must set `status` to `failed` and include a non-null `error` object. Adapters may reuse the same `run_id` to resume a run: existing successful tasks can be skipped, while failed or incomplete tasks are retried and their records are replaced.
+
 ## `run_manifest.json`
 
 `run_manifest.json` stores global metadata for the whole baseline execution and must follow `schemas/run_manifest.schema.json`.

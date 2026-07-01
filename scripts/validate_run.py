@@ -73,6 +73,8 @@ def main(argv):
 
     run_outputs_path = run_dir / "run_outputs.jsonl"
     records = []
+    records_with_error = []
+    failed_records = []
     if not run_outputs_path.exists():
         errors.append(f"missing file: {run_outputs_path}")
     else:
@@ -103,6 +105,15 @@ def main(argv):
             errors.append(f"record {i}: run_id {record['run_id']} does not match directory {run_dir.name}")
         if record["status"] not in STATUSES:
             errors.append(f"record {i}: invalid status {record['status']}")
+        error_obj = record.get("error")
+        if error_obj:
+            records_with_error.append((i, task_id, record["status"], error_obj))
+        if record["status"] == "failed":
+            failed_records.append((i, task_id, error_obj))
+            if not error_obj:
+                errors.append(f"record {i}: failed task {task_id} must include a non-null error field")
+        elif error_obj:
+            errors.append(f"record {i}: non-failed task {task_id} has non-null error field")
         if record["prompt_type"] not in PROMPT_TYPES:
             errors.append(f"record {i}: invalid prompt_type {record['prompt_type']}")
         if record["video_id"] != task["video"]["id"]:
@@ -136,6 +147,15 @@ def main(argv):
                     )
 
     if manifest and records:
+        expected_task_ids = (
+            manifest.get("adapter", {})
+            .get("task_selection", {})
+            .get("task_ids")
+        )
+        if expected_task_ids:
+            missing_expected = sorted(set(expected_task_ids) - seen)
+            if missing_expected:
+                errors.append(f"manifest task_selection has missing task records: {missing_expected}")
         if manifest.get("num_tasks") != len(records):
             errors.append(f"manifest num_tasks {manifest.get('num_tasks')} != records {len(records)}")
         if manifest.get("num_success") is not None:
@@ -150,6 +170,16 @@ def main(argv):
     print(f"run_dir: {run_dir}")
     print(f"records: {len(records)}")
     print(f"known benchmark tasks: {len(tasks)}")
+    if records_with_error:
+        print("\nTASKS WITH ERROR:")
+        for _, task_id, status, error_obj in records_with_error:
+            error_type = error_obj.get("type", "UnknownError") if isinstance(error_obj, dict) else type(error_obj).__name__
+            message = error_obj.get("message", str(error_obj)) if isinstance(error_obj, dict) else str(error_obj)
+            print(f"- {task_id} [{status}] {error_type}: {message}")
+    elif failed_records:
+        print("\nFAILED TASKS:")
+        for _, task_id, _ in failed_records:
+            print(f"- {task_id} [failed]")
     if errors:
         print("\nERRORS:")
         for error in errors:

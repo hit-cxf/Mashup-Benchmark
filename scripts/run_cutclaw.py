@@ -172,6 +172,14 @@ def load_existing_records(run_dir: Path) -> list[dict[str, Any]]:
     return records
 
 
+def load_existing_record(task_dir: Path) -> dict[str, Any] | None:
+    path = task_dir / "run_output.json"
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
 def write_run_index(
     *,
     run_dir: Path,
@@ -266,6 +274,7 @@ def run_one_task(
     logs_dir = task_dir / "logs"
     artifacts_dir = task_dir / "artifacts"
     output_video = task_dir / "output.mp4"
+    existing_record = load_existing_record(task_dir)
 
     video_path, audio_path = task_paths(task, benchmark_root)
     instruction = task["task"]["prompt"]
@@ -282,9 +291,17 @@ def run_one_task(
     write_json(artifacts_dir / "benchmark_task.json", task)
 
     shot_plan_path, shot_point_path = derive_cutclaw_outputs(cutclaw_root, video_path, audio_path, instruction)
-    if output_video.exists() and not overwrite:
-        print(f"[{task_id}] output exists, reusing: {output_video}")
+    can_reuse_success = (
+        output_video.exists()
+        and not overwrite
+        and (existing_record is None or existing_record.get("status") == "success")
+        and not (existing_record or {}).get("error")
+    )
+    if can_reuse_success:
+        print(f"[{task_id}] success output exists, reusing: {output_video}")
     else:
+        if existing_record and existing_record.get("status") != "success" and not overwrite:
+            print(f"[{task_id}] existing record is {existing_record.get('status')}, retrying in same run")
         if not video_path.exists():
             raise FileNotFoundError(f"Benchmark video not found: {video_path}")
         if not audio_path.exists():

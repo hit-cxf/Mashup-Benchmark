@@ -152,7 +152,7 @@ Each baseline adapter should follow the same shared argument conventions whereve
 | `--results-root` | Standardized result root. Defaults to `runs/` inside this benchmark repo and should stay under the benchmark root for schema validation and evaluation. |
 | `--method` | Method name written to the manifest, such as `cutclaw`, `direct_claw`, or `videoagent`. |
 | `--method-version` | Method version or experiment label written to the manifest, used to distinguish original runs, ablations, and model configurations. |
-| `--overwrite` | Regenerate a task even if its `output.mp4` already exists. |
+| `--overwrite` | Regenerate a task even if its `output.mp4` already exists. By default, the same run can be resumed: successful tasks with an output video are skipped, while failed or incomplete tasks are retried. |
 | `--dry-run` | Print the commands and write skipped metadata without calling models or rendering, useful for checking paths and arguments. |
 
 Method-specific options are documented in each baseline section, such as CutClaw's hook dialogue, ending video, crop ratio, and source-video audio volume.
@@ -194,6 +194,8 @@ CutClaw-specific arguments:
 | `--original-audio-volume` | Mixed-in source-video audio volume. Defaults to `0.0`, meaning BGM only. |
 | `--video-type` | Video type passed to CutClaw. The current default is `film`, kept for compatibility with CutClaw's original entrypoint. |
 
+The same `run_id` can be executed multiple times to fill in failed tasks. By default, the adapter reuses successful task outputs; if a task was previously recorded as `failed`, or if `output.mp4` is missing, the same `run_id` will retry that task. Use `--overwrite` only when successful tasks should also be regenerated.
+
 CutClaw's raw intermediate outputs remain in the CutClaw project's `Output/` directory; the benchmark stores only the standardized `runs/<run_id>/` structure used for evaluation. After generation, validate and evaluate the run with:
 
 ```bash
@@ -232,6 +234,8 @@ Validate a submitted run:
 ```bash
 uv run python scripts/validate_run.py runs/<run_id>
 ```
+
+If any task has a non-null `error`, the validator lists it under `TASKS WITH ERROR` with its `task_id`, status, and message. A `failed` task does not need `output.mp4`, but it must include a non-null `error` field in `run_output.json`.
 
 Evaluate a submitted run:
 
